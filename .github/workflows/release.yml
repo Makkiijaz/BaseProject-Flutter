@@ -63,6 +63,7 @@ jobs:
           bundle exec fastlane build_release_apk
 
       - name: Build iOS release IPA without codesign
+        if: ${{ hashFiles('ios/Podfile') != '' }}
         run: |
           cd ios
           bundle exec fastlane build_release_ipa
