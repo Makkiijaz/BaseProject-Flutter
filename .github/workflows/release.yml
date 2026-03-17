@@ -37,6 +37,7 @@ jobs:
       - name: Set up Ruby for Fastlane
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: '3.2'
           bundler-cache: false
 
       - name: Install Android Fastlane
