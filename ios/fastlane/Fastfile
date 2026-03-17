@@ -8,7 +8,7 @@ platform :ios do
 
     sh("cd '#{project_root}' && flutter clean")
     sh("cd '#{project_root}' && flutter pub get")
-    sh("cd '#{ios_dir}' && pod install --repo-update")
+    sh("cd '#{ios_dir}' && bundle exec pod install --repo-update")
     sh("cd '#{project_root}' && flutter build ipa --release --no-codesign --target lib/app/main.dart")
   end
 end
