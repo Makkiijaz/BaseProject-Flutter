@@ -5,6 +5,6 @@ platform :android do
   lane :build_release_apk do
     sh("cd .. && flutter clean")
     sh("cd .. && flutter pub get")
-    sh("cd .. && flutter build apk --release")
+    sh("cd .. && flutter build apk --release --target lib/app/main.dart")
   end
 end

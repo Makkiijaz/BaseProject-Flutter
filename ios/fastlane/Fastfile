@@ -6,6 +6,6 @@ platform :ios do
     sh("cd .. && flutter clean")
     sh("cd .. && flutter pub get")
     sh("cd .. && cd ios && pod install --repo-update")
-    sh("cd .. && flutter build ipa --release --no-codesign")
+    sh("cd .. && flutter build ipa --release --no-codesign --target lib/app/main.dart")
   end
 end
