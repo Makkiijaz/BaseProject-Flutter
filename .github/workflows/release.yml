@@ -31,14 +31,21 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
           bundler-cache: false
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: Install Android gems
         run: |
@@ -46,6 +53,7 @@ jobs:
           bundle install
 
       - name: Install iOS gems
+        if: ${{ hashFiles('ios/Gemfile') != '' }}
         run: |
           cd ios
           bundle install
@@ -58,31 +66,19 @@ jobs:
           cd android
           bundle exec fastlane build_release_apk
 
-      - name: Build iOS release IPA without codesign
-        if: ${{ hashFiles('ios/Podfile') != '' }}
-        run: |
-          cd ios
-          bundle exec fastlane build_release_ipa
-
-      - name: Read version from pubspec.yaml
-        id: version
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-
       - name: Upload Android APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ steps.version.outputs.version }}
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
-      - name: Upload iOS IPA artifact
-        if: ${{ hashFiles('build/ios/ipa/*.ipa') != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ipa-${{ steps.version.outputs.version }}
-          path: build/ios/ipa/*.ipa
+      - name: Build iOS release without codesign
+        if: ${{ hashFiles('ios/Podfile') != '' }}
+        continue-on-error: true
+        run: |
+          cd ios
+          bundle exec fastlane build_release_ipa
 
       - name: Create and push tag if missing
         run: |
@@ -95,3 +91,12 @@ jobs:
             git tag "$TAG"
             git push origin "$TAG"
           fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
