@@ -1,14 +1,13 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Build Flutter iOS release IPA without codesign"
+  desc "Build Flutter iOS release without codesign"
   lane :build_release_ipa do
     project_root = File.expand_path("../..", __dir__)
     ios_dir = File.expand_path("..", __dir__)
 
-    sh("cd '#{project_root}' && flutter clean")
     sh("cd '#{project_root}' && flutter pub get")
     sh("cd '#{ios_dir}' && bundle exec pod install --repo-update")
-    sh("cd '#{project_root}' && flutter build ipa --release --no-codesign --target lib/app/main.dart")
+    sh("cd '#{project_root}' && flutter build ios --release --no-codesign --target lib/app/main.dart")
   end
 end
